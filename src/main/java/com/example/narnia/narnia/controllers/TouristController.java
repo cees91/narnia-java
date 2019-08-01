@@ -21,34 +21,55 @@ public class TouristController {
     @Autowired
     private TouristService service;
 
-    @GetMapping(params="status")
-    public @ResponseBody String getWorldStatus(){
-        return service.checkStatus();
-    }
+    /**
+     * Returns a list of tourists that are currently in narnia!
+     * @return
+     */
     @GetMapping("/inside")
     public List<Tourist> getTouristsInNarnia(){
         return service.findAllInNarnia();
     }
+
+    /**
+     * Returns a list of tourists who have registered, but are not in narnia
+     * @return
+     */
     @GetMapping("/registered")
     public List<Tourist> getRegisteredTourists(){
         return service.findAllNotInNarnia();
     }
+
+    /**
+     *  Lets a tourist go to Narnia, as long as Narnia isn't full (5 people max)
+     * @param tourist Expects a tourist object
+     * @throws RuntimeException will throw an error if the world is full.
+     */
     @PostMapping("/add")
-    public Tourist addTourist(@RequestBody Tourist tourist)  throws RuntimeException{
+    public void addTourist(@RequestBody Tourist tourist)  throws RuntimeException{
         if(service.findAllInNarnia().size() < 5) {
                 tourist.setInNarnia(true);
-                return repo.save(tourist);
+                repo.save(tourist);
         } else {
             throw new WorldIsFullException("World is currently full, please come back later!");
         }
     }
+
+    /**
+     * Allows tourists to register for Narnia
+     * @param tourist Tourist object with first name, last name, age and city
+     */
     @PostMapping("/register")
-    public Tourist registerTourist(@RequestBody Tourist tourist)  throws RuntimeException{
-        return repo.save(tourist);
+    public void registerTourist(@RequestBody Tourist tourist) {
+         repo.save(tourist);
     }
 
-    @DeleteMapping("/{touristID}")
-    public ResponseEntity<?> deletePost(@PathVariable Long touristID) {
+    /**
+     * Removes the user from Narnia by setting the boolean property to false
+     * @param touristID ID of the tourist that has to leave narnia.
+     * @return a http response if everything went ok
+     */
+    @PatchMapping("/{touristID}")
+    public ResponseEntity<?> leaveNarnia(@PathVariable Long touristID) {
         return repo.findById(touristID).map(tourist -> {
             tourist.setInNarnia(false);
             repo.save(tourist);

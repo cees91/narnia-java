@@ -14,10 +14,6 @@ public class TouristService {
     @Autowired
     private TouristRepository repo;
 
-    public String checkStatus(){
-        int currentOccupation = repo.findAll().size();
-        return "There are currently " + (5-currentOccupation) + " spots left in Narnia!";
-    }
     public List<Tourist> findAllInNarnia(){
         List<Tourist> tourists = repo.findAll();
         return tourists.stream().filter(tourist -> tourist.isInNarnia() == true).collect(Collectors.toList());
